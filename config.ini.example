@@ -1,0 +1,7 @@
+[openvpn-http-api]
+Host = openvpn
+Port = 5000
+RootPassword = supersecure
+
+[sqlite]
+FilePath = storage.sqlite3
