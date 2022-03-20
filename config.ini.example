@@ -1,7 +1,5 @@
 [openvpn-http-api]
-Host = openvpn
-Port = 5000
-RootPassword = supersecure
+Uri = http://localhost:8090
 
 [sqlite]
 FilePath = storage.sqlite3
