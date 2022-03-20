@@ -17,7 +17,7 @@ logging.basicConfig(level=config.get('logging', 'level', fallback='INFO'),
 if __name__ == '__main__':
     persist = Persistent(config['sqlite']['FilePath'])
     admin_manager = AdminManager(persist)
-    openvpn_api = OpenvpnApi(config['openvpn-http-api']['Uri'], config['openvpn-http-api']['RootPassword'])
+    openvpn_api = OpenvpnApi(config['openvpn-http-api']['Uri'])
     app = Flask(__name__)
 
     admin_controller = AdminController(admin_manager)
