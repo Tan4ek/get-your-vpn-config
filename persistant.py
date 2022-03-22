@@ -18,7 +18,7 @@ class InviteCodeModel(Base):
     created_at = Column("created_at", DateTime, nullable=False)
 
 
-class VpnProvider(Base):
+class VpnProviderModel(Base):
     __tablename__ = "provider"
     id = Column("id", Integer, primary_key=True)
     type = Column("type", String, nullable=False)
@@ -31,6 +31,13 @@ class VpnProvider(Base):
 class InviteCodeEntity:
     code: str
     description: str
+
+
+@dataclass
+class VpnProviderEntity:
+    type: str
+    invite_code: str
+    payload: str
 
 
 class AlreadyExistCode(ValueError):
@@ -87,13 +94,21 @@ class Persistent:
     def create_openvpn_provider(self, invite_code: str, payload: str):
         # payload - json
         invite_code_id = self._session.query(InviteCodeModel.id).filter(InviteCodeModel.code == invite_code).one()[0]
-        self._session.add(VpnProvider(type='openvpn', invite_code_id=invite_code_id,
-                                      payload=payload,
-                                      created_at=datetime.utcnow()))
+        self._session.add(VpnProviderModel(type='openvpn', invite_code_id=invite_code_id,
+                                           payload=payload,
+                                           created_at=datetime.utcnow()))
         self._session.commit()
 
+    def get_openvpn_providers(self, invite_code: str) -> List[VpnProviderEntity]:
+        result = self._session.query(VpnProviderModel).join(InviteCodeModel) \
+            .filter(InviteCodeModel.code == invite_code) \
+            .filter(VpnProviderModel.type == 'openvpn') \
+            .all()
+
+        return [VpnProviderEntity(type=m.type, invite_code=invite_code, payload=m.payload) for m in result]
+
     def exist_openvpn_provider(self, invite_code: str) -> bool:
-        return self._session.query(InviteCodeModel).join(VpnProvider) \
+        return self._session.query(InviteCodeModel).join(VpnProviderModel) \
                    .filter(InviteCodeModel.code == invite_code).count() > 0
 
 
@@ -101,7 +116,8 @@ if __name__ == '__main__':
     persist = Persistent("test.sqlite3")
 
     # persist.delete_code('14')
-    print(persist.get_codes())
+    # print(persist.get_codes())
+    print(persist.get_openvpn_providers('5QP4J2HIY1'))
 
-    print(persist.get_code('5QP4J2HIY1'))
-    print(persist.create_openvpn_provider('5QP4J2HIY1', '{}'))
+    # print(persist.get_code('5QP4J2HIY1'))
+    # print(persist.create_openvpn_provider('5QP4J2HIY1', '{}'))

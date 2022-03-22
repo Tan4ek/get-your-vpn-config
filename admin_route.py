@@ -70,9 +70,17 @@ class InviteCodeController:
             invite_code = body.get('invite-code')
             password = body.get('password')
             openvpn_client_provider = self._admin_manager.create_provider_openvpn(invite_code, password)
-            return jsonify({
-                "ovpn_file": openvpn_client_provider.ovpn_file
-            })
+            if openvpn_client_provider:
+                return jsonify({
+                    "ovpn_file": openvpn_client_provider.ovpn_file
+                })
+            else:
+                return make_response('', 404)
+
+        @app.route("/provider-openvpn", methods=["GET"])
+        def get_providers():
+            code = request.args.get('code')
+            return jsonify(self._admin_manager.get_openvpn_providers(code))
 
     def blueprint(self) -> Blueprint:
         return self._flask_blueprint
