@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String, DateTime, create_engine, delete
+from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine, delete, ForeignKey
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -15,7 +15,16 @@ class InviteCodeModel(Base):
     id = Column("id", Integer, primary_key=True)
     code = Column("code", String, unique=True, nullable=False)
     description = Column("description", String)
-    created_at = Column("created_at", DateTime)
+    created_at = Column("created_at", DateTime, nullable=False)
+
+
+class VpnProvider(Base):
+    __tablename__ = "provider"
+    id = Column("id", Integer, primary_key=True)
+    type = Column("type", String, nullable=False)
+    invite_code_id = Column("invite_code_id", Integer, ForeignKey("invite_code.id"), nullable=False)
+    payload = Column("payload", JSON)
+    created_at = Column("created_at", DateTime, nullable=False)
 
 
 @dataclass
@@ -53,6 +62,13 @@ class Persistent:
             else:
                 raise e
 
+    def get_code(self, code: str) -> Optional[InviteCodeEntity]:
+        model = self._session.query(InviteCodeModel).filter(InviteCodeModel.code == code).one_or_none()
+        if model:
+            return InviteCodeEntity(model.code, model.description)
+        else:
+            return None
+
     def delete_code(self, code: str) -> bool:
         try:
             result = self._session.execute(
@@ -68,9 +84,24 @@ class Persistent:
         return [InviteCodeEntity(model.code, model.description) for model in
                 (self._session.query(InviteCodeModel).order_by(InviteCodeModel.created_at).all())]
 
+    def create_openvpn_provider(self, invite_code: str, payload: str):
+        # payload - json
+        invite_code_id = self._session.query(InviteCodeModel.id).filter(InviteCodeModel.code == invite_code).one()[0]
+        self._session.add(VpnProvider(type='openvpn', invite_code_id=invite_code_id,
+                                      payload=payload,
+                                      created_at=datetime.utcnow()))
+        self._session.commit()
+
+    def exist_openvpn_provider(self, invite_code: str) -> bool:
+        return self._session.query(InviteCodeModel).join(VpnProvider) \
+                   .filter(InviteCodeModel.code == invite_code).count() > 0
+
 
 if __name__ == '__main__':
-    persist = Persistent("test.sqlite")
+    persist = Persistent("test.sqlite3")
 
     # persist.delete_code('14')
     print(persist.get_codes())
+
+    print(persist.get_code('5QP4J2HIY1'))
+    print(persist.create_openvpn_provider('5QP4J2HIY1', '{}'))
