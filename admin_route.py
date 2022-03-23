@@ -1,3 +1,5 @@
+from functools import wraps
+
 from flask import Blueprint
 from flask import jsonify
 from flask import request, make_response
@@ -7,15 +9,29 @@ from admin_manager import AdminManager
 
 class AdminController:
 
-    def __init__(self, admin_manager: AdminManager):
+    def token_required(self, f):
+        @wraps(f)
+        def decorator(*args, **kwargs):
+            token = None
+            if 'x-api-key' in request.headers:
+                token = request.headers['x-api-key']
+            if not token or token != self.__x_api_key:
+                return make_response(jsonify({"message": "token invalid"}), 401)
+            return f(*args, **kwargs)
+
+        return decorator
+
+    def __init__(self, admin_manager: AdminManager, x_api_key: str):
         self._admin_manager = admin_manager
         self._flask_blueprint = Blueprint('admin-management', __name__, url_prefix="/god")
         self._init_route()
+        self.__x_api_key = x_api_key
 
     def _init_route(self):
         app = self._flask_blueprint
 
         @app.route("/client", methods=['POST'])
+        @self.token_required
         def create_client():
             body = request.get_json()
 
@@ -27,6 +43,7 @@ class AdminController:
             })
 
         @app.route("/client", methods=['DELETE'])
+        @self.token_required
         def delete_client():
             body = request.get_json()
 
@@ -35,6 +52,7 @@ class AdminController:
             return ''
 
         @app.route("/clients", methods=['GET'])
+        @self.token_required
         def clients():
             return jsonify(self._admin_manager.get_codes())
 

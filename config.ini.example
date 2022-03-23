@@ -3,3 +3,6 @@ Uri = http://localhost:8090
 
 [sqlite]
 FilePath = storage.sqlite3
+
+[admin]
+XApiKey = supersecureapikey

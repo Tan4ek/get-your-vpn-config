@@ -20,7 +20,7 @@ if __name__ == '__main__':
     admin_manager = AdminManager(openvpn_api, persist)
     app = Flask(__name__)
 
-    admin_controller = AdminController(admin_manager)
+    admin_controller = AdminController(admin_manager, config['admin']['XApiKey'])
     invite_controller = InviteCodeController(admin_manager)
 
     app.register_blueprint(admin_controller.blueprint())
