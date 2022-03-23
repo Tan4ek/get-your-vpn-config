@@ -30,7 +30,7 @@ class AdminController:
     def _init_route(self):
         app = self._flask_blueprint
 
-        @app.route("/client", methods=['POST'])
+        @app.post("/invite")
         @self.token_required
         def create_client():
             body = request.get_json()
@@ -42,16 +42,13 @@ class AdminController:
                 'code': invite_code.code
             })
 
-        @app.route("/client", methods=['DELETE'])
+        @app.delete("/invite/<string:code>")
         @self.token_required
-        def delete_client():
-            body = request.get_json()
-
-            code = body['code']
+        def delete_client(code):
             self._admin_manager.delete_invite_code(code)
             return ''
 
-        @app.route("/clients", methods=['GET'])
+        @app.get("/invites")
         @self.token_required
         def clients():
             return jsonify(self._admin_manager.get_codes())
@@ -70,9 +67,8 @@ class InviteCodeController:
     def _init_route(self):
         app = self._flask_blueprint
 
-        @app.route("/invite-code", methods=["GET"])
-        def get_invite_code():
-            code = request.args.get('code')
+        @app.get("/invite/<string:code>")
+        def get_invite_code(code: str):
             invite_code = self._admin_manager.get_code(code)
             if invite_code:
                 return jsonify({
@@ -82,10 +78,9 @@ class InviteCodeController:
             else:
                 return make_response('', 404)
 
-        @app.route("/provider-openvpn", methods=["POST"])
-        def create_provider():
+        @app.post("/invite/<string:code>/openvpn")
+        def create_provider(invite_code):
             body = request.get_json()
-            invite_code = body.get('invite-code')
             password = body.get('password')
             openvpn_client_provider = self._admin_manager.create_provider_openvpn(invite_code, password)
             if openvpn_client_provider:
@@ -95,9 +90,8 @@ class InviteCodeController:
             else:
                 return make_response('', 404)
 
-        @app.route("/provider-openvpn", methods=["GET"])
-        def get_providers():
-            code = request.args.get('code')
+        @app.get("/invite/<string:code>/openvpn")
+        def get_providers(code):
             return jsonify(self._admin_manager.get_openvpn_providers(code))
 
     def blueprint(self) -> Blueprint:
