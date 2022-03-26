@@ -19,6 +19,7 @@ class InviteCode:
 
 @dataclass
 class OpenvpnProviderClient:
+    id: str
     invite_code: str
     ovpn_file: str
 
@@ -67,7 +68,7 @@ class AdminManager:
         return self._persistent.exist_openvpn_provider(invite_code)
 
     def get_openvpn_providers(self, invite_code: str) -> List[OpenvpnProviderClient]:
-        return [OpenvpnProviderClient(invite_code=e.invite_code, ovpn_file=json.loads(e.payload)['ovpn_file'])
+        return [OpenvpnProviderClient(id=e.id, invite_code=e.invite_code, ovpn_file=json.loads(e.payload)['ovpn_file'])
                 for e in self._persistent.get_openvpn_providers(invite_code)]
 
     @staticmethod

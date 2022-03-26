@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
@@ -20,7 +21,7 @@ class InviteCodeModel(Base):
 
 class VpnProviderModel(Base):
     __tablename__ = "provider"
-    id = Column("id", Integer, primary_key=True)
+    id = Column("id", String, primary_key=True)
     type = Column("type", String, nullable=False)
     invite_code_id = Column("invite_code_id", Integer, ForeignKey("invite_code.id"), nullable=False)
     payload = Column("payload", JSON)
@@ -35,6 +36,7 @@ class InviteCodeEntity:
 
 @dataclass
 class VpnProviderEntity:
+    id: str
     type: str
     invite_code: str
     payload: str
@@ -54,7 +56,15 @@ class Persistent:
         Session = sessionmaker()
         Session.configure(bind=engine)
         self._session = Session()
-        Base.metadata.create_all(engine)
+        self.__init_db__()
+
+    def __init_db__(self):
+        import alembic.config
+        alembic_args = [
+            '--raiseerr',
+            'upgrade', 'head',
+        ]
+        alembic.config.main(argv=alembic_args)
 
     def create_code(self, invite_code: InviteCodeEntity) -> InviteCodeEntity:
         try:
@@ -94,7 +104,7 @@ class Persistent:
     def create_openvpn_provider(self, invite_code: str, payload: str):
         # payload - json
         invite_code_id = self._session.query(InviteCodeModel.id).filter(InviteCodeModel.code == invite_code).one()[0]
-        self._session.add(VpnProviderModel(type='openvpn', invite_code_id=invite_code_id,
+        self._session.add(VpnProviderModel(id=str(uuid.uuid4()), type='openvpn', invite_code_id=invite_code_id,
                                            payload=payload,
                                            created_at=datetime.utcnow()))
         self._session.commit()
@@ -105,7 +115,7 @@ class Persistent:
             .filter(VpnProviderModel.type == 'openvpn') \
             .all()
 
-        return [VpnProviderEntity(type=m.type, invite_code=invite_code, payload=m.payload) for m in result]
+        return [VpnProviderEntity(id=m.id, type=m.type, invite_code=invite_code, payload=m.payload) for m in result]
 
     def exist_openvpn_provider(self, invite_code: str) -> bool:
         return self._session.query(InviteCodeModel).join(VpnProviderModel) \
