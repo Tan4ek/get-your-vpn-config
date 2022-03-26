@@ -230,3 +230,9 @@ fabric.properties
 config.ini
 .vscode
 .git
+/nginx-docker/nginx-selfsigned.key
+/nginx-docker/nginx-selfsigned.crt
+/nginx-docker/dhparam.pem
+/nginx-docker/www/
+/nginx-docker/hosts/
+/nginx-docker/logs/
