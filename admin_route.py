@@ -79,10 +79,10 @@ class InviteCodeController:
                 return make_response('', 404)
 
         @app.post("/invite/<string:code>/openvpn")
-        def create_provider(invite_code):
+        def create_provider(code):
             body = request.get_json()
             password = body.get('password')
-            openvpn_client_provider = self._admin_manager.create_provider_openvpn(invite_code, password)
+            openvpn_client_provider = self._admin_manager.create_provider_openvpn(code, password)
             if openvpn_client_provider:
                 return jsonify({
                     "ovpn_file": openvpn_client_provider.ovpn_file

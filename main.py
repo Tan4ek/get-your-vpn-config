@@ -25,4 +25,4 @@ if __name__ == '__main__':
 
     app.register_blueprint(admin_controller.blueprint())
     app.register_blueprint(invite_controller.blueprint())
-    app.run(port=8080)
+    app.run(port=8080, host='0.0.0.0')
