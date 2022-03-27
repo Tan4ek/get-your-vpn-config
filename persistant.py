@@ -101,13 +101,15 @@ class Persistent:
         return [InviteCodeEntity(model.code, model.description) for model in
                 (self._session.query(InviteCodeModel).order_by(InviteCodeModel.created_at).all())]
 
-    def create_openvpn_provider(self, invite_code: str, payload: str):
+    def create_openvpn_provider(self, invite_code: str, payload: str) -> VpnProviderEntity:
         # payload - json
+        provider_id = str(uuid.uuid4())
         invite_code_id = self._session.query(InviteCodeModel.id).filter(InviteCodeModel.code == invite_code).one()[0]
-        self._session.add(VpnProviderModel(id=str(uuid.uuid4()), type='openvpn', invite_code_id=invite_code_id,
+        self._session.add(VpnProviderModel(id=provider_id, type='openvpn', invite_code_id=invite_code_id,
                                            payload=payload,
                                            created_at=datetime.utcnow()))
         self._session.commit()
+        return VpnProviderEntity(provider_id, 'openvpn', invite_code, payload)
 
     def get_openvpn_providers(self, invite_code: str) -> List[VpnProviderEntity]:
         result = self._session.query(VpnProviderModel).join(InviteCodeModel) \

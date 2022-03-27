@@ -59,8 +59,8 @@ class AdminManager:
                 'client_id': client_id,
                 'ovpn_file': openvpn_client.ovpn_entity
             }
-            self._persistent.create_openvpn_provider(invite.code, json.dumps(payload))
-            return OpenvpnProviderClient(invite_code, openvpn_client.ovpn_entity)
+            provider_entity = self._persistent.create_openvpn_provider(invite.code, json.dumps(payload))
+            return OpenvpnProviderClient(provider_entity.id, invite_code, openvpn_client.ovpn_entity)
         else:
             return None
 

@@ -1,3 +1,4 @@
+import base64
 from functools import wraps
 
 from flask import Blueprint
@@ -71,9 +72,16 @@ class InviteCodeController:
         def get_invite_code(code: str):
             invite_code = self._admin_manager.get_code(code)
             if invite_code:
+                openvpn_provider = self._admin_manager.get_openvpn_providers(code)
                 return jsonify({
                     "active": True,
-                    "openvpn": self._admin_manager.exist_openvpn_provider(invite_code.code)
+                    "openvpn": [
+                        {
+                            "id": op.id,
+                            "ovpn_file": base64.b64encode(bytes(op.ovpn_file, 'utf-8')).decode('utf-8')
+                        }
+                        for op in openvpn_provider
+                    ]
                 })
             else:
                 return make_response('', 404)
@@ -85,14 +93,22 @@ class InviteCodeController:
             openvpn_client_provider = self._admin_manager.create_provider_openvpn(code, password)
             if openvpn_client_provider:
                 return jsonify({
-                    "ovpn_file": openvpn_client_provider.ovpn_file
+                    "id": openvpn_client_provider.id,
+                    "ovpn_file": base64.b64encode(bytes(openvpn_client_provider.ovpn_file, 'utf-8')).decode('utf-8')
                 })
             else:
                 return make_response('', 404)
 
         @app.get("/invite/<string:code>/openvpn")
         def get_providers(code):
-            return jsonify(self._admin_manager.get_openvpn_providers(code))
+            openvpn_provider = self._admin_manager.get_openvpn_providers(code)
+            return jsonify([
+                {
+                    "id": op.id,
+                    "ovpn_file": base64.b64encode(bytes(op.ovpn_file, 'utf-8')).decode('utf-8')
+                }
+                for op in openvpn_provider
+            ])
 
     def blueprint(self) -> Blueprint:
         return self._flask_blueprint
