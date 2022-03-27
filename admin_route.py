@@ -5,7 +5,7 @@ from flask import Blueprint
 from flask import jsonify
 from flask import request, make_response
 
-from admin_manager import AdminManager
+from admin_manager import AdminManager, OpenvpnProviderExist
 
 
 class AdminController:
@@ -90,14 +90,19 @@ class InviteCodeController:
         def create_provider(code):
             body = request.get_json()
             password = body.get('password')
-            openvpn_client_provider = self._admin_manager.create_provider_openvpn(code, password)
-            if openvpn_client_provider:
-                return jsonify({
-                    "id": openvpn_client_provider.id,
-                    "ovpn_file": base64.b64encode(bytes(openvpn_client_provider.ovpn_file, 'utf-8')).decode('utf-8')
-                })
-            else:
-                return make_response('', 404)
+            try:
+                openvpn_client_provider = self._admin_manager.create_provider_openvpn(code, password)
+                if openvpn_client_provider:
+                    return jsonify({
+                        "id": openvpn_client_provider.id,
+                        "ovpn_file": base64.b64encode(bytes(openvpn_client_provider.ovpn_file, 'utf-8')).decode('utf-8')
+                    })
+                else:
+                    return make_response('', 404)
+            except OpenvpnProviderExist:
+                return make_response(jsonify({
+                    "error": "openvpn already exists"
+                }), 409)
 
         @app.get("/invite/<string:code>/openvpn")
         def get_providers(code):

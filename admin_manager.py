@@ -24,6 +24,12 @@ class OpenvpnProviderClient:
     ovpn_file: str
 
 
+class OpenvpnProviderExist(ValueError):
+
+    def __init__(self, invite_code: str):
+        self.invite_code = invite_code
+
+
 class AdminManager:
 
     def __init__(self, openvpn_api: OpenvpnApi, persistent: Persistent):
@@ -52,6 +58,8 @@ class AdminManager:
     def create_provider_openvpn(self, invite_code: str, password: str) -> Optional[OpenvpnProviderClient]:
         invite = self.get_code(invite_code)
         if invite:
+            if self._persistent.exist_openvpn_provider(invite.code):
+                raise OpenvpnProviderExist(invite.code)
             client_id = str(uuid.uuid4())
             openvpn_client = self._openvpn_api.create_client(BuildClient(client_id, password))
 
