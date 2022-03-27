@@ -1,0 +1,11 @@
+version: '3'
+services:
+  get-your-vpn-config:
+    image: tan4ek/get-your-vpn-config:latest
+    container_name: get-your-vpn-config
+    ports:
+      - 8080:8080
+    volumes:
+      - ./config.ini:/app/config.ini
+      - ./get-your-vpn-config.sqlite3:/app/get-your-vpn-config.sqlite3
+    restart: always
