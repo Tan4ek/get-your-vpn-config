@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
+import alembic.config
 from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine, delete, ForeignKey
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -42,10 +43,18 @@ class VpnProviderEntity:
     payload: str
 
 
-class AlreadyExistCode(ValueError):
+class AlreadyExistCodeException(Exception):
 
     def __init__(self, code: str):
         self.code = code
+
+
+def __init_db__():
+    alembic_args = [
+        '--raiseerr',
+        'upgrade', 'head',
+    ]
+    alembic.config.main(argv=alembic_args)
 
 
 class Persistent:
@@ -56,15 +65,7 @@ class Persistent:
         Session = sessionmaker()
         Session.configure(bind=engine)
         self._session = Session()
-        self.__init_db__()
-
-    def __init_db__(self):
-        import alembic.config
-        alembic_args = [
-            '--raiseerr',
-            'upgrade', 'head',
-        ]
-        alembic.config.main(argv=alembic_args)
+        __init_db__()
 
     def create_code(self, invite_code: InviteCodeEntity) -> InviteCodeEntity:
         try:
@@ -75,7 +76,7 @@ class Persistent:
         except IntegrityError as e:
             self._session.rollback()
             if 'UNIQUE constraint failed' in str(e):
-                raise AlreadyExistCode(invite_code.code)
+                raise AlreadyExistCodeException(invite_code.code)
             else:
                 raise e
 
@@ -125,7 +126,7 @@ class Persistent:
 
 
 if __name__ == '__main__':
-    persist = Persistent("test.sqlite3")
+    persist = Persistent("../test.sqlite3")
 
     # persist.delete_code('14')
     # print(persist.get_codes())

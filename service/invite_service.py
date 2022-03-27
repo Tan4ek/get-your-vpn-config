@@ -7,8 +7,8 @@ from typing import List, Optional
 
 from retry import retry
 
-from openvpn_api import OpenvpnApi, BuildClient
-from persistant import Persistent, InviteCodeEntity, AlreadyExistCode
+from repository.openvpn_api import OpenvpnApi, BuildClient
+from repository.persistant import Persistent, InviteCodeEntity, AlreadyExistCodeException
 
 
 @dataclass
@@ -24,21 +24,21 @@ class OpenvpnProviderClient:
     ovpn_file: str
 
 
-class OpenvpnProviderExist(ValueError):
+class OpenvpnProviderExistException(Exception):
 
     def __init__(self, invite_code: str):
         self.invite_code = invite_code
 
 
-class AdminManager:
+class InviteService:
 
     def __init__(self, openvpn_api: OpenvpnApi, persistent: Persistent):
         self._persistent = persistent
         self._openvpn_api = openvpn_api
 
-    @retry(AlreadyExistCode)  # retry until create uniq code
+    @retry(AlreadyExistCodeException)  # retry until create uniq code
     def create_invite_code(self, description: str) -> InviteCode:
-        code = AdminManager.generate_random_code(length=10)
+        code = InviteService.generate_random_code(length=10)
         code_entity = self._persistent.create_code(InviteCodeEntity(code, description))
         return InviteCode(code_entity.code, description)
 
@@ -59,7 +59,7 @@ class AdminManager:
         invite = self.get_code(invite_code)
         if invite:
             if self._persistent.exist_openvpn_provider(invite.code):
-                raise OpenvpnProviderExist(invite.code)
+                raise OpenvpnProviderExistException(invite.code)
             client_id = str(uuid.uuid4())
             openvpn_client = self._openvpn_api.create_client(BuildClient(client_id, password))
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     persist = Persistent("test.sqlite")
 
     openvpn_api = OpenvpnApi('http://localhost:8090')
-    admin_manager = AdminManager(openvpn_api, persist)
+    admin_manager = InviteService(openvpn_api, persist)
     invite_code = admin_manager.create_invite_code()
     print(invite_code)
-    print(AdminManager.generate_random_code(10))
+    print(InviteService.generate_random_code(10))
