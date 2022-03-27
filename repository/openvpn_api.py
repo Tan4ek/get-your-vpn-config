@@ -14,13 +14,13 @@ class ClientEntity:
     ovpn_entity: str
 
 
-class CreateClientError(ValueError):
+class CreateClientException(Exception):
 
     def __init__(self, name: str):
         self.name = name
 
 
-class GetClientError(ValueError):
+class GetClientException(Exception):
 
     def __init__(self, name: str):
         self.name = name
@@ -38,10 +38,10 @@ class OpenvpnApi:
             if response.status_code == 200:
                 return ClientEntity(response.text)
             else:
-                raise CreateClientError(build_client.name)
-        except Exception as e:
+                raise CreateClientException(build_client.name)
+        except Exception:
             # todo exception logging
-            raise CreateClientError(build_client.name)
+            raise CreateClientException(build_client.name)
 
     def get_client(self, name: str) -> ClientEntity:
         response = requests.get(f"{self.__uri}/ovpn-config",
@@ -49,7 +49,7 @@ class OpenvpnApi:
         if response.status_code == 200:
             return ClientEntity(response.text)
         else:
-            raise GetClientError(name)
+            raise GetClientException(name)
 
 
 if __name__ == '__main__':
