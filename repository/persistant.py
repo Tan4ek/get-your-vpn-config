@@ -102,27 +102,28 @@ class Persistent:
         return [InviteCodeEntity(model.code, model.description) for model in
                 (self._session.query(InviteCodeModel).order_by(InviteCodeModel.created_at).all())]
 
-    def create_openvpn_provider(self, invite_code: str, payload: str) -> VpnProviderEntity:
+    def create_provider(self, invite_code: str, provider_type: str, payload: str) -> VpnProviderEntity:
         # payload - json
         provider_id = str(uuid.uuid4())
         invite_code_id = self._session.query(InviteCodeModel.id).filter(InviteCodeModel.code == invite_code).one()[0]
-        self._session.add(VpnProviderModel(id=provider_id, type='openvpn', invite_code_id=invite_code_id,
+        self._session.add(VpnProviderModel(id=provider_id, type=provider_type, invite_code_id=invite_code_id,
                                            payload=payload,
                                            created_at=datetime.utcnow()))
         self._session.commit()
-        return VpnProviderEntity(provider_id, 'openvpn', invite_code, payload)
+        return VpnProviderEntity(provider_id, provider_type, invite_code, payload)
 
-    def get_openvpn_providers(self, invite_code: str) -> List[VpnProviderEntity]:
+    def get_providers(self, invite_code: str, provider_type: str):
         result = self._session.query(VpnProviderModel).join(InviteCodeModel) \
             .filter(InviteCodeModel.code == invite_code) \
-            .filter(VpnProviderModel.type == 'openvpn') \
+            .filter(VpnProviderModel.type == provider_type) \
             .all()
-
         return [VpnProviderEntity(id=m.id, type=m.type, invite_code=invite_code, payload=m.payload) for m in result]
 
-    def exist_openvpn_provider(self, invite_code: str) -> bool:
+    def exist_provider(self, invite_code: str, provider_type: str):
         return self._session.query(InviteCodeModel).join(VpnProviderModel) \
-                   .filter(InviteCodeModel.code == invite_code).count() > 0
+                   .filter(InviteCodeModel.code == invite_code) \
+                   .filter(VpnProviderModel.type == provider_type) \
+                   .count() > 0
 
 
 if __name__ == '__main__':
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 
     # persist.delete_code('14')
     # print(persist.get_codes())
-    print(persist.get_openvpn_providers('5QP4J2HIY1'))
+    print(persist.get_providers('5QP4J2HIY1', 'openvpn'))
 
     # print(persist.get_code('5QP4J2HIY1'))
     # print(persist.create_openvpn_provider('5QP4J2HIY1', '{}'))

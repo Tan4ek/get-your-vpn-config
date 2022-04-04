@@ -7,6 +7,7 @@ from controller.admin_controller import AdminController
 from controller.invite_controller import InviteController
 from repository.openvpn_api import OpenvpnApi
 from repository.persistant import Persistent
+from repository.shadow_socks_api import ShadowSocksApi
 from service.invite_service import InviteService
 
 config = configparser.ConfigParser()
@@ -17,9 +18,10 @@ logging.basicConfig(level=config.get('logging', 'level', fallback='INFO'),
 
 persist = Persistent(config['sqlite']['FilePath'])
 openvpn_api = OpenvpnApi(config['openvpn-http-api']['Uri'])
-invite_service = InviteService(openvpn_api, persist)
+shadow_socks_api = ShadowSocksApi(config['outline-ss-server-user-manager']['Uri'])
+invite_service = InviteService(openvpn_api, shadow_socks_api, persist)
 admin_controller = AdminController(invite_service, config['admin']['XApiKey'])
-invite_controller = InviteController(invite_service)
+invite_controller = InviteController(invite_service, config['get-your-vpn-config']['Host'])
 
 
 def create_app():

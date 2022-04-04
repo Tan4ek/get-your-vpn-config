@@ -1,4 +1,10 @@
+[get-your-vpn-config]
+Host = my-host-machine.net
+
 [openvpn-http-api]
+Uri = http://localhost:8090
+
+[outline-ss-server-user-manager]
 Uri = http://localhost:8090
 
 [sqlite]
