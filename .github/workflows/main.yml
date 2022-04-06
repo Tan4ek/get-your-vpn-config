@@ -39,5 +39,5 @@ jobs:
         with:
           push: true
           file: ./Dockerfile
-          platforms: linux/amd64,linux/386
+          platforms: linux/amd64
           tags: tan4ek/get-your-vpn-config:latest
