@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import alembic.config
-from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine, delete, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine, delete, ForeignKey, Index
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -26,7 +26,20 @@ class VpnProviderModel(Base):
     type = Column("type", String, nullable=False)
     invite_code_id = Column("invite_code_id", Integer, ForeignKey("invite_code.id"), nullable=False)
     payload = Column("payload", JSON)
+    external_id = Column("external_id", String, unique=True, index=True, default=str(uuid.uuid4()))
     created_at = Column("created_at", DateTime, nullable=False)
+
+
+class TrafficRecordModel(Base):
+    __tablename__ = "traffic_record"
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    date_from = Column("date_from", Integer, nullable=False)
+    date_to = Column("date_to", Integer, nullable=False)
+    provider_id = Column("provider_id", String, ForeignKey("provider.id"), nullable=False)
+    quantity_bytes = Column("quantity_bytes", Integer, nullable=False)
+
+
+Index("idx_from_to", TrafficRecordModel.date_from, TrafficRecordModel.date_to)
 
 
 @dataclass
@@ -102,12 +115,14 @@ class Persistent:
         return [InviteCodeEntity(model.code, model.description) for model in
                 (self._session.query(InviteCodeModel).order_by(InviteCodeModel.created_at).all())]
 
-    def create_provider(self, invite_code: str, provider_type: str, payload: str) -> VpnProviderEntity:
+    def create_provider(self, invite_code: str, external_id: str, provider_type: str,
+                        payload: str) -> VpnProviderEntity:
         # payload - json
         provider_id = str(uuid.uuid4())
         invite_code_id = self._session.query(InviteCodeModel.id).filter(InviteCodeModel.code == invite_code).one()[0]
         self._session.add(VpnProviderModel(id=provider_id, type=provider_type, invite_code_id=invite_code_id,
                                            payload=payload,
+                                           external_id=external_id,
                                            created_at=datetime.utcnow()))
         self._session.commit()
         return VpnProviderEntity(provider_id, provider_type, invite_code, payload)
