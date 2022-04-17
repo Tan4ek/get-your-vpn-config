@@ -26,7 +26,7 @@ class VpnProviderModel(Base):
     type = Column("type", String, nullable=False)
     invite_code_id = Column("invite_code_id", Integer, ForeignKey("invite_code.id"), nullable=False)
     payload = Column("payload", JSON)
-    external_id = Column("external_id", String, unique=True, index=True, default=str(uuid.uuid4()))
+    external_id = Column("external_id", String, unique=True, index=True, nullable=False, default=str(uuid.uuid4()))
     created_at = Column("created_at", DateTime, nullable=False)
 
 

@@ -29,9 +29,9 @@ def upgrade():
                     sa.PrimaryKeyConstraint('id')
                     )
     op.create_index('idx_from_to', 'traffic_record', ['date_from', 'date_to'], unique=False)
-    op.add_column('provider', sa.Column('external_id', sa.String(), default=str(uuid.uuid4())))
-    op.create_index(op.f('ix_provider_external_id'), 'provider', ['external_id'], unique=True)
+    op.execute("ALTER TABLE provider ADD COLUMN external_id VARCHAR NOT NULL DEFAULT ''")
     op.execute("UPDATE provider SET external_id = substr(payload,20,36) WHERE type='openvpn'")
+    op.create_index(op.f('ix_provider_external_id'), 'provider', ['external_id'], unique=True)
     # ### end Alembic commands ###
 
 
