@@ -8,7 +8,7 @@ from typing import List, Optional
 from retry import retry
 
 from repository.openvpn_api import OpenvpnApi, BuildClient
-from repository.persistant import Persistent, InviteCodeEntity, AlreadyExistCodeException
+from repository.persistent import Persistent, InviteCodeEntity, AlreadyExistCodeException
 from repository.shadow_socks_api import ShadowSocksApi
 
 
