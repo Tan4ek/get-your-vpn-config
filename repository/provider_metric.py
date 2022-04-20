@@ -53,7 +53,34 @@ class PrometheusOpenvpnProviderMetric(ProviderMetric):
                 f"Can't get data usage. Status code: {resp.status_code}, response: {resp.text}")
 
 
+class PrometheusShadowsocksProviderMetric(ProviderMetric):
+
+    def __init__(self, prom_url: str):
+        self._prom_url = prom_url
+
+    def data_usage(self, date_from: datetime, date_to: datetime) -> List[ProviderTraffic]:
+        resp = requests.get(f"{self._prom_url}/api/v1/query?"
+                            'query=increase(shadowsocks_data_bytes{status="OK",dir="c<p"}'
+                            f"[{(date_to - date_from).seconds}s])")
+        if resp.status_code == 200:
+            provider_traffics = []
+            for result in resp.json()['data']['result']:
+                common_name = result['metric']['access_key']
+                data_usage_byte = int(float(result['value'][1]))
+                provider_traffics.append(ProviderTraffic(
+                    provider_type='shadow_socks',
+                    external_id=common_name,
+                    data_usage_bytes=data_usage_byte,
+                    date_from=date_from,
+                    date_to=date_to
+                ))
+            return provider_traffics
+        else:
+            raise ProviderMetricException(
+                f"Can't get data usage. Status code: {resp.status_code}, response: {resp.text}")
+
+
 if __name__ == '__main__':
-    print(PrometheusOpenvpnProviderMetric('http://localhost:9092') \
+    print(PrometheusShadowsocksProviderMetric('http://localhost:9092') \
           .data_usage(date_from=datetime.strptime('2022-04-18 18:00:00.243860', '%Y-%m-%d %H:%M:%S.%f'),
                       date_to=datetime.utcnow()))
