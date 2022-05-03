@@ -1,8 +1,11 @@
+import logging
 from datetime import datetime, timedelta
 from typing import List
 
 from repository.persistant import Persistent, TrafficRecordEntity
 from repository.provider_metric import ProviderMetric
+
+log = logging.getLogger(__name__)
 
 
 class ProvidersMetricService:
@@ -15,7 +18,7 @@ class ProvidersMetricService:
         for provider_metric in self._providers_metric:
             try:
                 provider_type = provider_metric.provider_type()
-                print(f"scrap metrics for {provider_type}")
+                logging.info("Scrap metrics for %s", provider_type)
                 last_date_from = self._persistent.last_date_traffic_record(provider_type)
                 if not last_date_from:
                     last_date_from = datetime.utcnow() - timedelta(hours=1)
@@ -31,6 +34,6 @@ class ProvidersMetricService:
                                                              quantity_bytes=data_usage.data_usage_bytes)
                         self._persistent.save_traffic_record(traffic_entity)
                     else:
-                        print(f"no provider for {data_usage.external_id}")
+                        log.info("no provider for %s", data_usage.external_id)
             except Exception as e:
-                print(f"exception for provider {provider_metric}. {e}")
+                log.error("Error while scrap metrics for provider %s. Error: %s", provider_metric.provider_type(), e)

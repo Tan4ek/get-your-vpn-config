@@ -18,8 +18,10 @@ from service.providers_metric_service import ProvidersMetricService
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-logging.basicConfig(level=config.get('logging', 'level', fallback='INFO'),
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+log = logging.getLogger(__name__)
 
 persist = Persistent(config['sqlite']['FilePath'])
 openvpn_api = OpenvpnApi(config['openvpn-http-api']['Uri'])
@@ -40,12 +42,13 @@ class ScheduleThread(threading.Thread):
         self._interval = interval
 
     def run(self):
+        log.info("Start schedule thread")
         while not self.stopped():
             schedule.run_pending()
             time.sleep(self._interval)
 
     def stop(self):
-        print("stop is called")
+        log.info("Schedule thread stop")
         self._event.set()
 
     def stopped(self):
