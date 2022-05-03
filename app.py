@@ -10,8 +10,10 @@ from controller.admin_controller import AdminController
 from controller.invite_controller import InviteController
 from repository.openvpn_api import OpenvpnApi
 from repository.persistant import Persistent
+from repository.provider_metric import PrometheusOpenvpnProviderMetric, PrometheusShadowsocksProviderMetric
 from repository.shadow_socks_api import ShadowSocksApi
 from service.invite_service import InviteService
+from service.providers_metric_service import ProvidersMetricService
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -25,6 +27,9 @@ shadow_socks_api = ShadowSocksApi(config['outline-ss-server-user-manager']['Uri'
 invite_service = InviteService(openvpn_api, shadow_socks_api, persist)
 admin_controller = AdminController(invite_service, config['admin']['XApiKey'])
 invite_controller = InviteController(invite_service, config['get-your-vpn-config']['Host'])
+provider_metric = ProvidersMetricService([PrometheusOpenvpnProviderMetric(config['vpn-metrics']['PrometheusUri']),
+                                          PrometheusShadowsocksProviderMetric(config['vpn-metrics']['PrometheusUri'])],
+                                         persist)
 
 
 class ScheduleThread(threading.Thread):
@@ -47,11 +52,7 @@ class ScheduleThread(threading.Thread):
         return self._event.is_set()
 
 
-def background_job():
-    print('Hello from the background thread')
-
-
-schedule.every(2).seconds.do(background_job)
+schedule.every(1).hour.do(provider_metric.scrap_metrics)
 
 
 def create_app():

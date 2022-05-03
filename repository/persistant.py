@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 import alembic.config
@@ -56,6 +56,15 @@ class VpnProviderEntity:
     payload: str
 
 
+@dataclass
+class TrafficRecordEntity:
+    id: int
+    date_from: datetime
+    date_to: datetime
+    provider_id: str
+    quantity_bytes: int
+
+
 class AlreadyExistCodeException(Exception):
 
     def __init__(self, code: str):
@@ -68,6 +77,14 @@ def __init_db__():
         'upgrade', 'head',
     ]
     alembic.config.main(argv=alembic_args)
+
+
+def timestamp_milliseconds(date_time: datetime) -> int:
+    return int(date_time.replace(tzinfo=timezone.utc).timestamp() * 1000)
+
+
+def datetime_from_milliseconds(milliseconds: int) -> datetime:
+    return datetime.utcfromtimestamp(milliseconds / 1000)
 
 
 class Persistent:
@@ -139,6 +156,32 @@ class Persistent:
                    .filter(InviteCodeModel.code == invite_code) \
                    .filter(VpnProviderModel.type == provider_type) \
                    .count() > 0
+
+    def last_date_traffic_record(self, provider_type: str) -> Optional[datetime]:
+        result = self._session.query(TrafficRecordModel).join(VpnProviderModel) \
+            .filter(VpnProviderModel.type == provider_type) \
+            .order_by(TrafficRecordModel.date_to.desc()) \
+            .limit(1) \
+            .all()
+        if result:
+            return datetime_from_milliseconds(result[0].date_to)
+        else:
+            return None
+
+    def save_traffic_record(self, traffic_record: TrafficRecordEntity):
+        self._session.add(TrafficRecordModel(date_from=timestamp_milliseconds(traffic_record.date_from),
+                                             date_to=timestamp_milliseconds(traffic_record.date_to),
+                                             provider_id=traffic_record.provider_id,
+                                             quantity_bytes=traffic_record.quantity_bytes))
+        self._session.commit()
+
+    def provider_by_external_id(self, external_id: str) -> Optional[VpnProviderEntity]:
+        result = self._session.query(VpnProviderModel).filter(VpnProviderModel.external_id == external_id).one_or_none()
+        if result:
+            # TODO: find out how to join with field in sqlalchemy
+            return VpnProviderEntity(id=result.id, type=result.type, invite_code="", payload=result.payload)
+        else:
+            return None
 
 
 if __name__ == '__main__':

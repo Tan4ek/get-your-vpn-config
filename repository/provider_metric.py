@@ -22,7 +22,10 @@ class ProviderMetricException(Exception):
 
 class ProviderMetric:
 
-    def data_usage(self, date_from: datetime, date_to: datetime) -> ProviderTraffic:
+    def data_usage(self, date_from: datetime, date_to: datetime) -> List[ProviderTraffic]:
+        pass
+
+    def provider_type(self) -> str:
         pass
 
 
@@ -41,7 +44,7 @@ class PrometheusOpenvpnProviderMetric(ProviderMetric):
                 common_name = result['metric']['common_name']
                 data_usage_byte = int(float(result['value'][1]))
                 provider_traffics.append(ProviderTraffic(
-                    provider_type='openvpn',
+                    provider_type=self.provider_type(),
                     external_id=common_name,
                     data_usage_bytes=data_usage_byte,
                     date_from=date_from,
@@ -51,6 +54,9 @@ class PrometheusOpenvpnProviderMetric(ProviderMetric):
         else:
             raise ProviderMetricException(
                 f"Can't get data usage. Status code: {resp.status_code}, response: {resp.text}")
+
+    def provider_type(self) -> str:
+        return 'openvpn'
 
 
 class PrometheusShadowsocksProviderMetric(ProviderMetric):
@@ -68,7 +74,7 @@ class PrometheusShadowsocksProviderMetric(ProviderMetric):
                 common_name = result['metric']['access_key']
                 data_usage_byte = int(float(result['value'][1]))
                 provider_traffics.append(ProviderTraffic(
-                    provider_type='shadow_socks',
+                    provider_type=self.provider_type(),
                     external_id=common_name,
                     data_usage_bytes=data_usage_byte,
                     date_from=date_from,
@@ -78,6 +84,9 @@ class PrometheusShadowsocksProviderMetric(ProviderMetric):
         else:
             raise ProviderMetricException(
                 f"Can't get data usage. Status code: {resp.status_code}, response: {resp.text}")
+
+    def provider_type(self) -> str:
+        return 'shadow_socks'
 
 
 if __name__ == '__main__':
