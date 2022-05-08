@@ -36,20 +36,21 @@ class PrometheusOpenvpnProviderMetric(ProviderMetric):
 
     def data_usage(self, date_from: datetime, date_to: datetime) -> List[ProviderTraffic]:
         resp = requests.get(f"{self._prom_url}/api/v1/query?"
-                            f"query=increase(openvpn_server_client_received_bytes_total"
-                            f"[{(date_to - date_from).seconds}s])")
+                            f"query=sum by (common_name) (delta(openvpn_server_client_received_bytes_total"
+                            f"[{(date_to - date_from).seconds}s]))")
         if resp.status_code == 200:
             provider_traffics = []
             for result in resp.json()['data']['result']:
                 common_name = result['metric']['common_name']
                 data_usage_byte = int(float(result['value'][1]))
-                provider_traffics.append(ProviderTraffic(
-                    provider_type=self.provider_type(),
-                    external_id=common_name,
-                    data_usage_bytes=data_usage_byte,
-                    date_from=date_from,
-                    date_to=date_to
-                ))
+                if data_usage_byte > 0:
+                    provider_traffics.append(ProviderTraffic(
+                        provider_type=self.provider_type(),
+                        external_id=common_name,
+                        data_usage_bytes=data_usage_byte,
+                        date_from=date_from,
+                        date_to=date_to
+                    ))
             return provider_traffics
         else:
             raise ProviderMetricException(
@@ -73,13 +74,14 @@ class PrometheusShadowsocksProviderMetric(ProviderMetric):
             for result in resp.json()['data']['result']:
                 common_name = result['metric']['access_key']
                 data_usage_byte = int(float(result['value'][1]))
-                provider_traffics.append(ProviderTraffic(
-                    provider_type=self.provider_type(),
-                    external_id=common_name,
-                    data_usage_bytes=data_usage_byte,
-                    date_from=date_from,
-                    date_to=date_to
-                ))
+                if data_usage_byte > 0:
+                    provider_traffics.append(ProviderTraffic(
+                        provider_type=self.provider_type(),
+                        external_id=common_name,
+                        data_usage_bytes=data_usage_byte,
+                        date_from=date_from,
+                        date_to=date_to
+                    ))
             return provider_traffics
         else:
             raise ProviderMetricException(

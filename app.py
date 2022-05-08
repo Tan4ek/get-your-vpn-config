@@ -55,7 +55,7 @@ class ScheduleThread(threading.Thread):
         return self._event.is_set()
 
 
-schedule.every(1).hour.do(provider_metric.scrap_metrics)
+schedule.every(1).minute.do(provider_metric.scrap_metrics)
 
 
 def create_app():
