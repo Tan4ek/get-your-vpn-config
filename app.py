@@ -1,10 +1,8 @@
 import configparser
 import logging
-import threading
-import time
 
-import schedule
 from flask import Flask
+from flask_apscheduler import APScheduler
 
 from controller.admin_controller import AdminController
 from controller.invite_controller import InviteController
@@ -34,36 +32,18 @@ provider_metric = ProvidersMetricService([PrometheusOpenvpnProviderMetric(config
                                          persist)
 
 
-class ScheduleThread(threading.Thread):
-
-    def __init__(self, interval: float = 0.1):
-        super().__init__()
-        self._event: threading.Event = threading.Event()
-        self._interval = interval
-
-    def run(self):
-        log.info("Start schedule thread")
-        while not self.stopped():
-            schedule.run_pending()
-            time.sleep(self._interval)
-
-    def stop(self):
-        log.info("Schedule thread stop")
-        self._event.set()
-
-    def stopped(self):
-        return self._event.is_set()
-
-
-schedule.every(1).minute.do(provider_metric.scrap_metrics)
-
-
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(admin_controller.blueprint())
     app.register_blueprint(invite_controller.blueprint())
 
-    continuous_thread = ScheduleThread()
-    continuous_thread.daemon = True
-    continuous_thread.start()
+    scheduler = APScheduler()
+
+    @scheduler.task('interval', id='scrap_metrics', seconds=60)
+    def scrap_metrics():
+        provider_metric.scrap_metrics()
+
+    scheduler.init_app(app)
+    scheduler.start()
+
     return app
