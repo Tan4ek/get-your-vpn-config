@@ -176,7 +176,7 @@ class Persistent:
         else:
             return None
 
-    def save_traffic_record(self, traffic_record: TrafficRecordEntity):
+    def create_traffic_record(self, traffic_record: TrafficRecordEntity):
         self._session.add(TrafficRecordModel(date_from=timestamp_milliseconds(traffic_record.date_from),
                                              date_to=timestamp_milliseconds(traffic_record.date_to),
                                              provider_id=traffic_record.provider_id,
@@ -185,10 +185,11 @@ class Persistent:
         self._session.commit()
 
     def provider_by_external_id(self, external_id: str) -> Optional[VpnProviderEntity]:
-        result = self._session.query(VpnProviderModel).filter(VpnProviderModel.external_id == external_id).one_or_none()
+        result = self._session.query(VpnProviderModel, InviteCodeModel).join(InviteCodeModel) \
+            .filter(VpnProviderModel.external_id == external_id).one_or_none()
         if result:
-            # TODO: find out how to join with field in sqlalchemy
-            return VpnProviderEntity(id=result.id, type=result.type, invite_code="", payload=result.payload)
+            return VpnProviderEntity(id=result[0].id, type=result[0].type, invite_code=result[1].code,
+                                     payload=result[0].payload)
         else:
             return None
 
@@ -198,7 +199,8 @@ if __name__ == '__main__':
 
     # persist.delete_code('14')
     # print(persist.get_codes())
-    print(persist.get_providers('5QP4J2HIY1', 'openvpn'))
+    print(persist.provider_by_external_id('11'))
+    # print(persist.get_providers('5QP4J2HIY1', 'openvpn'))
 
     # print(persist.get_code('5QP4J2HIY1'))
     # print(persist.create_openvpn_provider('5QP4J2HIY1', '{}'))

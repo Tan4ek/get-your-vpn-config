@@ -43,7 +43,7 @@ class ProvidersMetricService:
                                                              direction=traffic_direction_converter(
                                                                  data_usage.direction),
                                                              quantity_bytes=data_usage.data_usage_bytes)
-                        self._persistent.save_traffic_record(traffic_entity)
+                        self._persistent.create_traffic_record(traffic_entity)
                     else:
                         log.info("no provider for %s", data_usage.external_id)
             except Exception as e:
