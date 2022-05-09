@@ -8,7 +8,7 @@ from typing import List, Optional
 from retry import retry
 
 from repository.openvpn_api import OpenvpnApi, BuildClient
-from repository.persistant import Persistent, InviteCodeEntity, AlreadyExistCodeException
+from repository.persistent import Persistent, InviteCodeEntity, AlreadyExistCodeException
 from repository.shadow_socks_api import ShadowSocksApi
 
 
@@ -92,7 +92,7 @@ class InviteService:
                 'client_id': client_id,
                 'ovpn_file': openvpn_client.ovpn_entity
             }
-            provider_entity = self._persistent.create_provider(invite.code, 'openvpn', json.dumps(payload))
+            provider_entity = self._persistent.create_provider(invite.code, client_id, 'openvpn', json.dumps(payload))
             return OpenvpnProviderClient(provider_entity.id, invite_code, openvpn_client.ovpn_entity)
         else:
             return None
@@ -120,7 +120,8 @@ class InviteService:
                 'cipher': created_user.cipher,
                 'secret': created_user.secret
             }
-            provider_entity = self._persistent.create_provider(invite.code, 'shadow_socks', json.dumps(payload))
+            provider_entity = self._persistent.create_provider(invite.code, created_user.user_id, 'shadow_socks',
+                                                               json.dumps(payload))
             return ShadowSocks(
                 id=provider_entity.id,
                 user_id=created_user.user_id,
