@@ -1,6 +1,7 @@
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from enum import Enum
 from typing import List, Optional
 
 import alembic.config
@@ -36,6 +37,7 @@ class TrafficRecordModel(Base):
     date_from = Column("date_from", Integer, nullable=False)
     date_to = Column("date_to", Integer, nullable=False)
     provider_id = Column("provider_id", String, ForeignKey("provider.id"), nullable=False)
+    direction = Column("direction", String, nullable=False)
     quantity_bytes = Column("quantity_bytes", Integer, nullable=False)
 
 
@@ -56,6 +58,11 @@ class VpnProviderEntity:
     payload: str
 
 
+class TrafficDirection(Enum):
+    IN = 1
+    OUT = 2
+
+
 @dataclass
 class TrafficRecordEntity:
     id: int
@@ -63,6 +70,7 @@ class TrafficRecordEntity:
     date_to: datetime
     provider_id: str
     quantity_bytes: int
+    direction: TrafficDirection
 
 
 class AlreadyExistCodeException(Exception):
@@ -172,6 +180,7 @@ class Persistent:
         self._session.add(TrafficRecordModel(date_from=timestamp_milliseconds(traffic_record.date_from),
                                              date_to=timestamp_milliseconds(traffic_record.date_to),
                                              provider_id=traffic_record.provider_id,
+                                             direction=traffic_record.direction.name.lower(),
                                              quantity_bytes=traffic_record.quantity_bytes))
         self._session.commit()
 

@@ -2,10 +2,19 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
-from repository.persistant import Persistent, TrafficRecordEntity
-from repository.provider_metric import ProviderMetric
+from repository.persistant import Persistent, TrafficRecordEntity, TrafficDirection
+from repository.provider_metric import ProviderMetric, ProviderTrafficDirection
 
 log = logging.getLogger(__name__)
+
+
+def traffic_direction_converter(t: ProviderTrafficDirection) -> TrafficDirection:
+    if t is ProviderTrafficDirection.IN:
+        return TrafficDirection.IN
+    elif t is ProviderTrafficDirection.OUT:
+        return TrafficDirection.OUT
+    else:
+        raise ValueError(f"Invalid 'ProviderTrafficDirection' {t}")
 
 
 class ProvidersMetricService:
@@ -31,6 +40,8 @@ class ProvidersMetricService:
                                                              date_from=data_usage.date_from,
                                                              date_to=data_usage.date_to,
                                                              provider_id=provider_entity.id,
+                                                             direction=traffic_direction_converter(
+                                                                 data_usage.direction),
                                                              quantity_bytes=data_usage.data_usage_bytes)
                         self._persistent.save_traffic_record(traffic_entity)
                     else:

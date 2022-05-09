@@ -1,8 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import List
 
 import requests
+
+
+class ProviderTrafficDirection(Enum):
+    IN = 1
+    OUT = 2
 
 
 @dataclass
@@ -12,6 +18,7 @@ class ProviderTraffic:
     data_usage_bytes: int
     date_from: datetime
     date_to: datetime
+    direction: ProviderTrafficDirection
 
 
 class ProviderMetricException(Exception):
@@ -49,7 +56,8 @@ class PrometheusOpenvpnProviderMetric(ProviderMetric):
                         external_id=common_name,
                         data_usage_bytes=data_usage_byte,
                         date_from=date_from,
-                        date_to=date_to
+                        date_to=date_to,
+                        direction=ProviderTrafficDirection.IN
                     ))
             return provider_traffics
         else:
@@ -80,7 +88,8 @@ class PrometheusShadowsocksProviderMetric(ProviderMetric):
                         external_id=common_name,
                         data_usage_bytes=data_usage_byte,
                         date_from=date_from,
-                        date_to=date_to
+                        date_to=date_to,
+                        direction=ProviderTrafficDirection.IN
                     ))
             return provider_traffics
         else:
