@@ -7,7 +7,7 @@ from flask_apscheduler import APScheduler
 from controller.admin_controller import AdminController
 from controller.invite_controller import InviteController
 from repository.openvpn_api import OpenvpnApi
-from repository.persistant import Persistent
+from repository.persistent import Persistent
 from repository.provider_metric import PrometheusOpenvpnProviderMetric, PrometheusShadowsocksProviderMetric
 from repository.shadow_socks_api import ShadowSocksApi
 from service.invite_service import InviteService

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
-from repository.persistant import Persistent, TrafficRecordEntity, TrafficDirection
+from repository.persistent import Persistent, TrafficRecordEntity, TrafficDirection
 from repository.provider_metric import ProviderMetric, ProviderTrafficDirection
 
 log = logging.getLogger(__name__)

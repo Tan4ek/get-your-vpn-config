@@ -14,7 +14,7 @@ Base = declarative_base()
 
 
 class InviteCodeModel(Base):
-    __tablename__ = "invite_code"
+    __tablename__ = "invite_codes"
     id = Column("id", Integer, primary_key=True)
     code = Column("code", String, unique=True, nullable=False)
     description = Column("description", String)
@@ -22,21 +22,21 @@ class InviteCodeModel(Base):
 
 
 class VpnProviderModel(Base):
-    __tablename__ = "provider"
+    __tablename__ = "providers"
     id = Column("id", String, primary_key=True)
     type = Column("type", String, nullable=False)
-    invite_code_id = Column("invite_code_id", Integer, ForeignKey("invite_code.id"), nullable=False)
+    invite_code_id = Column("invite_code_id", Integer, ForeignKey("invite_codes.id"), nullable=False)
     payload = Column("payload", JSON)
     external_id = Column("external_id", String, unique=True, index=True, nullable=False, default=str(uuid.uuid4()))
     created_at = Column("created_at", DateTime, nullable=False)
 
 
 class TrafficRecordModel(Base):
-    __tablename__ = "traffic_record"
+    __tablename__ = "traffic_records"
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     date_from = Column("date_from", Integer, nullable=False)
     date_to = Column("date_to", Integer, nullable=False)
-    provider_id = Column("provider_id", String, ForeignKey("provider.id"), nullable=False)
+    provider_id = Column("provider_id", String, ForeignKey("providers.id"), nullable=False)
     direction = Column("direction", String, nullable=False)
     quantity_bytes = Column("quantity_bytes", Integer, nullable=False)
 

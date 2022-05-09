@@ -10,7 +10,7 @@ config = context.config
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from repository.persistant import Base
+from repository.persistent import Base
 
 target_metadata = Base.metadata
 # target_metadata = None
