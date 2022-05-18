@@ -7,6 +7,9 @@ Uri = http://localhost:8090
 [outline-ss-server-user-manager]
 Uri = http://localhost:8090
 
+[vpn-metrics]
+PrometheusUri = http://localhost:9090
+
 [sqlite]
 FilePath = get-your-vpn-config.sqlite3
 
