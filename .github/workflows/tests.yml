@@ -21,4 +21,4 @@ jobs:
         run: |
           docker build -f Dockerfile.tests -t local .
       - name: Run tests in container
-        run: docker run -it local ./run_tests.sh
+        run: docker run local ./run_tests.sh
