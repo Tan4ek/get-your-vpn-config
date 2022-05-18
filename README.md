@@ -31,3 +31,7 @@ Or
 `touch get-your-vpn-config.sqlite3`
 
 `docker-compose up`
+
+# How to run tests
+
+`python -m pytest`
