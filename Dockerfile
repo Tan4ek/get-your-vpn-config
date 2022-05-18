@@ -1,4 +1,4 @@
-FROM python:3.8-alpine as get-your-vpn-config-build
+FROM python:3.8 as get-your-vpn-config-build
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir --user --no-warn-script-location -r requirements.txt
 
