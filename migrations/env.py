@@ -1,4 +1,5 @@
 import configparser
+import os
 
 from alembic import context
 from sqlalchemy import engine_from_config
@@ -21,7 +22,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 local_config = configparser.ConfigParser()
-local_config.read('config.ini')
+local_config.read(os.getenv('GET_YOUR_VPN_CONFIG_PATH', default='config.ini'))
 
 
 def run_migrations_offline():
