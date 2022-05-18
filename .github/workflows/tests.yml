@@ -17,6 +17,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Check sqlite location
+        run: |
+          where sqlite3
+      - name: Install sqlite3
+        run: |
+          wget -c https://www.sqlite.org/2022/sqlite-tools-linux-x86-3380500.zip
+          tar xvfz sqlite-tools-linux-x86-3380500.zip
+          sudo cp sqlite-tools-linux-x86-3380500/* /usr/bin/
       - name: Check sqlite version
         run: |
           sqlite3 --version
