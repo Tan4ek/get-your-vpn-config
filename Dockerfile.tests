@@ -1,0 +1,6 @@
+FROM python:3.8
+WORKDIR /test-app
+COPY . /test-app
+RUN pip3 install --no-cache-dir --user --no-warn-script-location -r requirements.txt
+
+RUN chmod +x run_tests.sh
