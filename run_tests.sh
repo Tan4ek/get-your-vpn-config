@@ -3,7 +3,7 @@
 set -e
 
 clean_up_env() {
-  rm integration-test.sqlite3
+  rm -f integration-test.sqlite3
 }
 
 clean_up_env
