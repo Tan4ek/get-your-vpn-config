@@ -6,9 +6,6 @@ def test_json_client(httpserver: HTTPServer):
     httpserver.expect_request("/foobar").respond_with_json({"foo": "bar"})
     assert requests.get(httpserver.url_for("/foobar")).json() == {'foo': 'bar'}
 
-def test_failed():
-    assert 5 == 4
-
 
 def test_admin_invite_code_crud(client):
     create_invite_response = client.post("/god/invite", json={

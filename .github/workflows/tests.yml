@@ -19,6 +19,6 @@ jobs:
           fetch-depth: 0
       - name: Build test image
         run: |
-          docker build -f Dockerfile.tests -t local .
+          docker build -f Dockerfile.tests -t test-container .
       - name: Run tests in container
-        run: docker run local ./run_tests.sh
+        run: docker run test-container ./run_tests.sh
