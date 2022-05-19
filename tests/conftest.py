@@ -6,6 +6,11 @@ import pytest
 from app import create_app
 
 
+@pytest.fixture(scope="session")
+def httpserver_listen_address():
+    return "localhost", 9010
+
+
 @pytest.fixture()
 def app():
     db_fd, db_path = tempfile.mkstemp()
