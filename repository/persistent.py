@@ -192,15 +192,3 @@ class Persistent:
                                      payload=result[0].payload)
         else:
             return None
-
-
-if __name__ == '__main__':
-    persist = Persistent("../test.sqlite3")
-
-    # persist.delete_code('14')
-    # print(persist.get_codes())
-    print(persist.provider_by_external_id('11'))
-    # print(persist.get_providers('5QP4J2HIY1', 'openvpn'))
-
-    # print(persist.get_code('5QP4J2HIY1'))
-    # print(persist.create_openvpn_provider('5QP4J2HIY1', '{}'))

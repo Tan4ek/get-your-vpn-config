@@ -50,10 +50,3 @@ class OpenvpnApi:
             return ClientEntity(response.text)
         else:
             raise GetClientException(name)
-
-
-if __name__ == '__main__':
-    openvpn_api = OpenvpnApi('http://localhost:8090')
-    e = openvpn_api.create_client(BuildClient('test102', 'kek1'))
-    # e = openvpn_api.get_client('new_client1')
-    print(e)

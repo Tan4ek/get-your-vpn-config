@@ -147,13 +147,3 @@ class InviteService:
             ))
 
         return shadow_socks
-
-
-if __name__ == '__main__':
-    persist = Persistent("test.sqlite")
-
-    openvpn_api = OpenvpnApi('http://localhost:8090')
-    admin_manager = InviteService(openvpn_api, persist)
-    invite_code = admin_manager.create_invite_code()
-    print(invite_code)
-    print(InviteService.generate_random_code(10))

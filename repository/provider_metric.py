@@ -98,9 +98,3 @@ class PrometheusShadowsocksProviderMetric(ProviderMetric):
 
     def provider_type(self) -> str:
         return 'shadow_socks'
-
-
-if __name__ == '__main__':
-    print(PrometheusShadowsocksProviderMetric('http://localhost:9092') \
-          .data_usage(date_from=datetime.strptime('2022-04-18 18:00:00.243860', '%Y-%m-%d %H:%M:%S.%f'),
-                      date_to=datetime.utcnow()))
