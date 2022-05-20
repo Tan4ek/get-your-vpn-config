@@ -34,4 +34,4 @@ Or
 
 # How to run tests
 
-`python -m pytest`
+`./run_tests.sh`
