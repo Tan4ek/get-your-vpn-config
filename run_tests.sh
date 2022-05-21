@@ -7,7 +7,6 @@ clean_up_env() {
 }
 
 clean_up_env
-export GET_YOUR_VPN_CONFIG_PATH=tests/test_config.ini
 
 # run test
 python -m pytest
