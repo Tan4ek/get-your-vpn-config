@@ -1,5 +1,6 @@
 import configparser
 import logging
+import os
 
 from flask import Flask
 from flask_apscheduler import APScheduler
@@ -14,7 +15,7 @@ from service.invite_service import InviteService
 from service.providers_metric_service import ProvidersMetricService
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(os.getenv('GET_YOUR_VPN_CONFIG_PATH', default='config.ini'))
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

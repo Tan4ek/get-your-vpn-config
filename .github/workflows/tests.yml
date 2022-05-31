@@ -1,0 +1,24 @@
+name: Run tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.8 ]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Build test image
+        run: |
+          docker build -f Dockerfile.tests -t test-container .
+      - name: Run tests in container
+        run: docker run test-container ./run_tests.sh

@@ -5,3 +5,5 @@ retry2==0.9.3
 Flask==2.0.3
 gunicorn==20.1.0
 Flask-APScheduler==1.12.3
+pytest==7.1.2
+pytest-httpserver==1.0.4
