@@ -1,18 +1,16 @@
-FROM python:3.8 as get-your-vpn-config-build
+FROM python:3.13.18-slim-bookworm AS get-your-vpn-config-build
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir --user --no-warn-script-location -r requirements.txt
 
-FROM python:3.8-alpine
+FROM python:3.13.18-slim-bookworm
 WORKDIR /app
 COPY --from=get-your-vpn-config-build /root/.local /root/.local
 
 ENV PATH=/root/.local/bin:$PATH
-RUN apk update && apk upgrade --available \
-    && apk add --no-cache make
 
 COPY . /app
 
 # manager port
 EXPOSE 8080
 
-CMD ["make", "up"]
+CMD ["gunicorn", "wsgi:app", "--preload", "--bind", "0.0.0.0:8080"]
