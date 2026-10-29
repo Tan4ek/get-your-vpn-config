@@ -20,6 +20,11 @@
     
     
 # How to run
+The Docker images use Python 3.13.18 on Debian Bookworm and the application
+requires Python 3.13. The pinned CA bundle removes the compromised eMudhra
+chain. Rebuild with `docker build --pull` and redeploy to apply the runtime and
+dependency security fixes to existing installations.
+
 `cp config.ini.example config.ini`
 
 `docker build -t get-your-vpn-config .`
